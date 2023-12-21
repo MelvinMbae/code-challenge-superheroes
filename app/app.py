@@ -52,7 +52,7 @@ def get_singe_hero_by_id(id):
         
             return response
         
-@app.route('/powers/<int:id>', methods=['GET'])
+@app.route('/powers/<int:id>', methods=['GET','PATCH'])
 def get_singe_power_by_id(id):
     
     if request.method=='GET':
@@ -74,5 +74,49 @@ def get_singe_power_by_id(id):
                 )
         
             return response
+        
+    elif request.method=='PATCH':
+        new_power = Power.query.filter_by(id=id).first()
+        
+        if power ==None:
+            response=make_response(
+                jsonify({
+                    "error": "Power not found"
+                }),404
+            )
+            return response
+        
+        elif new_power:
+            for attr in request.get_json():
+                setattr(new_power, attr, request.get_json()[attr])
+
+            db.session.add(new_power)
+            db.session.commit()
+
+            response_dict = new_power.to_dict()
+
+            response = make_response(
+                jsonify(response_dict),
+                200
+            )
+            return response
+        
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
+
+
+# data = request.get_json()
+#         new_record = Power(
+#             description=data['description'],
+#         )
+
+#         db.session.add(new_record)
+#         db.session.commit()
+
+#         response_dict = new_record.to_dict()
+
+#         response = make_response(
+#             jsonify(response_dict),
+#             201,
+#         )
+#         return response

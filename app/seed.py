@@ -26,7 +26,7 @@ with app.app_context():
     for _ in range(10):
         power = Power(
             name=fake.word(),
-            description=fake.sentence(nb_words=6),
+            description='No power assigned yet'
             
         )
         powers.append(power)
