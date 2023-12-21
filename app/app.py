@@ -78,7 +78,7 @@ def get_singe_power_by_id(id):
     elif request.method=='PATCH':
         new_power = Power.query.filter_by(id=id).first()
         
-        if power ==None:
+        if new_power ==None:
             response=make_response(
                 jsonify({
                     "error": "Power not found"
@@ -87,36 +87,69 @@ def get_singe_power_by_id(id):
             return response
         
         elif new_power:
-            for attr in request.get_json():
-                setattr(new_power, attr, request.get_json()[attr])
+            
+            try:
+                for attr in request.get_json():
+                    setattr(new_power, attr, request.get_json()[attr])
 
-            db.session.add(new_power)
-            db.session.commit()
+                db.session.add(new_power)
+                db.session.commit()
 
-            response_dict = new_power.to_dict()
+                response_dict = new_power.to_dict()
 
-            response = make_response(
-                jsonify(response_dict),
-                200
-            )
-            return response
+                response = make_response(
+                    jsonify(response_dict),
+                    200
+                )
+                return response
+            except:
+                response=make_response(
+                    jsonify({
+                        "errors": ["validation errors"]
+                    }),404
+                )
+                return response
+            
+            
+@app.route('/hero_powers', methods=['POST'])
+def add_new_hero_power():
+    
+    
+    data = request.get_json()
+    hero_id = data.get('hero_id')
+    power_id = data.get('power_id')
+    strength = data.get('strength')
+    hero = Hero.query.get(hero_id)
+    power = Power.query.get(power_id)
+    
+    if not (hero and power):
+        return jsonify({"errors": ["Hero or Power not found"]}), 404
+    new_record = HeroPower(
+        strength=strength,
+        power_id=power_id,
+        hero_id=hero_id,
+        
+    )
+    
+    try:
+        db.session.add(new_record)
+        db.session.commit()
+        response_dict = new_record.to_dict()
+
+        response = make_response(
+            jsonify(response_dict),
+            201,
+        )
+        return response
+    except:
+        response=make_response(
+                jsonify({
+                "errors": ["validation errors"]
+                }),404
+                )
+        return response
         
 if __name__ == '__main__':
     app.run(port=5555, debug=True)
 
 
-# data = request.get_json()
-#         new_record = Power(
-#             description=data['description'],
-#         )
-
-#         db.session.add(new_record)
-#         db.session.commit()
-
-#         response_dict = new_record.to_dict()
-
-#         response = make_response(
-#             jsonify(response_dict),
-#             201,
-#         )
-#         return response
